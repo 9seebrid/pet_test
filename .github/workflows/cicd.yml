@@ -13,9 +13,6 @@ jobs:
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
-      - name: Build Docker image with memory limit
-        run: docker build --memory=4g --memory-swap=4g -t your_image_name .
-
       # - name: Create .env file
       #   run: |
       #     touch .env

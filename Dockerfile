@@ -1,11 +1,13 @@
 # 오피셜 노드 이미지
-FROM node:alpine3.18 as build
+FROM node:lts-alpine as build
 
 # 작업 디렉토리 설정
 WORKDIR /app
 
 # 패키지 파일 현재 디렉토리에 복사
 COPY package.json .
+
+RUN node --max-old-space-size=8192 $(which npm) ci
 
 # 패키지 설치
 RUN npm install
