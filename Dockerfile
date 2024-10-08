@@ -4,34 +4,32 @@ FROM node:lts-alpine as build
 # 작업 디렉토리 설정
 WORKDIR /app
 
-# 패키지 파일 현재 디렉토리에 복사
-COPY package.json .
+# 패키지 파일 복사
+COPY package.json package-lock.json* ./
 
-RUN node --max-old-space-size=8192 $(which npm) ci
-
-# 패키지 설치
-RUN npm install
+# npm ci로 패키지 설치 (메모리 옵션 추가)
+RUN NODE_OPTIONS="--max-old-space-size=8192" npm ci
 
 # 나머지 소스코드 복사
 COPY . .
 
-# 빌드
-RUN npm run build
+# 빌드 (메모리 옵션 추가)
+RUN NODE_OPTIONS="--max-old-space-size=8192" npm run build
 
 # nginx 이미지
 FROM nginx:1.23-alpine
 
-# nginx default 접근 파일 설정
+# nginx 기본 접근 파일 설정
 WORKDIR /usr/share/nginx/html
 
-# 기존 도커 컨테이너 삭제
+# 기존 파일 삭제
 RUN rm -rf *
 
-# 빌드 단계에서 리액트 빌드 파일을 복사
+# 빌드된 리액트 파일 복사
 COPY --from=build /app/build /usr/share/nginx/html
 
 # nginx 포트 설정
 EXPOSE 80
 
-# nginx 실행 할 때 기능 중지
-ENTRYPOINT [ "nginx","-g","daemon off;" ]
+# nginx 실행 (데몬 모드 중지)
+ENTRYPOINT [ "nginx", "-g", "daemon off;" ]
