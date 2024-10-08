@@ -1,0 +1,40 @@
+# Referrence: https://synuns.tistory.com/75 .
+name: CICD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: linode
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Create .env file
+        run: |
+          touch .env
+          echo "${{ secrets.REACT_APP_NAVER_MAP_API_KEY }}" > .env
+      - name: Sign in to Docker Hub
+        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build Docker Image
+        run: docker build -t sionp/front_vet .
+      - name: Push Docker Image
+        run: docker push sionp/front_vet:latest
+
+  deploy:
+    needs: build
+    runs-on: linode
+
+    steps:
+      - name: Pull image from docker hub
+        run: docker pull sionp/front_vet:latest
+      - name: Delete existing container
+        run: docker rm -f reactContainer
+      - name: Delete cache in ec2 linux
+        run: docker system prune -a -f
+
+      - name: Run container
+        run: docker run -d -p 3002:80 --name reactContainer sionp/front_vet
