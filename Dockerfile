@@ -8,13 +8,13 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 
 # npm ci로 패키지 설치 (메모리 옵션 추가)
-RUN NODE_OPTIONS="--max-old-space-size=8192" npm ci
+RUN NODE_OPTIONS="--max-old-space-size=1024" npm ci
 
 # 나머지 소스코드 복사
 COPY . .
 
 # 빌드 (메모리 옵션 추가)
-RUN NODE_OPTIONS="--max-old-space-size=8192" npm run build
+RUN NODE_OPTIONS="--max-old-space-size=1024" npm run build
 
 # nginx 이미지
 FROM nginx:1.23-alpine
